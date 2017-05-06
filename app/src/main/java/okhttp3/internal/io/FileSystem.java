@@ -15,19 +15,18 @@ import okio.Source;
 /**
  * 通过读写文件来访问数据存储结构。绝大多数调用者使用{@link #SYSTEM}这个实现就行。这个实现使用了
  * 本地文件存储引擎。替换的实现可以去使用注入（正在测试）或者转换存储数据（添加加密）
- * 所有的文件系统操作都是活动的，比如将{@link #source}和{@link #exists}保持隔离。
- * 不能保证{@link FileNotFoundException}不会被抛出。这个文件可能会在两个调用者直接移动
- *
- * 缺乏重要的特性,比如文件看,元数据,权限,以及磁盘空间信息。以换取这些限制,这个接口更容易实现和所有版本的Java和Android上工作。
  * Access to read and write files on a hierarchical data store. Most callers should use the {@link
  * #SYSTEM} implementation, which uses the host machine's local file system. Alternate
  * implementations may be used to inject faults (for testing) or to transform stored data (to add
  * encryption, for example).
  *
+ * 所有的文件系统操作都是活动的，比如将{@link #source}和{@link #exists}保持隔离。
+ * 不能保证{@link FileNotFoundException}不会被抛出。这个文件可能会在两个调用者直接移动
  * <p>All operations on a file system are racy. For example, guarding a call to {@link #source} with
  * {@link #exists} does not guarantee that {@link FileNotFoundException} will not be thrown. The
  * file may be moved between the two calls!
  *
+ * 缺乏重要的特性,比如文件看,元数据,权限,以及磁盘空间信息。以换取这些限制,这个接口更容易实现和所有版本的Java和Android上工作。
  * <p>This interface is less ambitious than {@link java.nio} introduced in Java 7.
  * It lacks important features like file watching, metadata, permissions, and disk space
  * information. In exchange for these limitations, this interface is easier to implement and works

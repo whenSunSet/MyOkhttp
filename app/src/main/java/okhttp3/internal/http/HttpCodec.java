@@ -6,6 +6,9 @@ package okhttp3.internal.http;
 
 import java.io.IOException;
 
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okio.Sink;
 
 /**
