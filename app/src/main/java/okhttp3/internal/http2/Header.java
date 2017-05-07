@@ -7,8 +7,11 @@ package okhttp3.internal.http2;
 import okhttp3.internal.Util;
 import okio.ByteString;
 
-/** HTTP header: the name is an ASCII string, but the value can be UTF-8. */
+/**
+ * HTTP的header：名字是ASCII 的string，但是valus可以是UTF-8格式编码
+ * HTTP header: the name is an ASCII string, but the value can be UTF-8. */
 public final class Header {
+    // 在HTTP/2中定义的特殊的header名字
     // Special header names defined in HTTP/2 spec.
     public static final ByteString PSEUDO_PREFIX = ByteString.encodeUtf8(":");
     public static final ByteString RESPONSE_STATUS = ByteString.encodeUtf8(":status");
@@ -17,9 +20,13 @@ public final class Header {
     public static final ByteString TARGET_SCHEME = ByteString.encodeUtf8(":scheme");
     public static final ByteString TARGET_AUTHORITY = ByteString.encodeUtf8(":authority");
 
-    /** Name in case-insensitive ASCII encoding. */
+    /**
+     * 使用不区分大小写的ASCII编码name
+     * Name in case-insensitive ASCII encoding. */
     public final ByteString name;
-    /** Value in UTF-8 encoding. */
+    /**
+     * Value使用utf8编码
+     * Value in UTF-8 encoding. */
     public final ByteString value;
     final int hpackSize;
 

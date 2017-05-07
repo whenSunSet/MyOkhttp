@@ -14,10 +14,13 @@ import okio.Source;
  * Created by Administrator on 2017/5/7 0007.
  */
 public abstract class RequestBody {
-    /** Returns the Content-Type header for this body. */
+    /**
+     * 返回这个body的Content-Type
+     * Returns the Content-Type header for this body. */
     public abstract MediaType contentType();
 
     /**
+     * 返回将要写入{@code out}的byte数，在调用{@link #writeTo}的时候，如果返回-1表示不知道
      * Returns the number of bytes that will be written to {@code out} in a call to {@link #writeTo},
      * or -1 if that count is unknown.
      */
@@ -25,10 +28,14 @@ public abstract class RequestBody {
         return -1;
     }
 
-    /** Writes the content of this request to {@code out}. */
+    /**
+     * 将内容写入{@code out}中
+     * Writes the content of this request to {@code out}. */
     public abstract void writeTo(BufferedSink sink) throws IOException;
 
     /**
+     * 从{@code content}中返回一个新的request body，如果{@code contentType}不是null并且缺少描述的字符集
+     * 那么这里将会使用UTF-8
      * Returns a new request body that transmits {@code content}. If {@code contentType} is non-null
      * and lacks a charset, this will use UTF-8.
      */
@@ -45,7 +52,9 @@ public abstract class RequestBody {
         return create(contentType, bytes);
     }
 
-    /** Returns a new request body that transmits {@code content}. */
+    /**
+     * 从{@code content}中返回一个新的request body
+     * Returns a new request body that transmits {@code content}. */
     public static RequestBody create(final MediaType contentType, final ByteString content) {
         return new RequestBody() {
             @Override public MediaType contentType() {
@@ -62,12 +71,16 @@ public abstract class RequestBody {
         };
     }
 
-    /** Returns a new request body that transmits {@code content}. */
+    /**
+     * 从{@code content}中返回一个新的request body
+     * Returns a new request body that transmits {@code content}. */
     public static RequestBody create(final MediaType contentType, final byte[] content) {
         return create(contentType, content, 0, content.length);
     }
 
-    /** Returns a new request body that transmits {@code content}. */
+    /**
+     * 从{@code content}中返回一个新的request body
+     * Returns a new request body that transmits {@code content}. */
     public static RequestBody create(final MediaType contentType, final byte[] content,
                                      final int offset, final int byteCount) {
         if (content == null) throw new NullPointerException("content == null");
@@ -87,7 +100,9 @@ public abstract class RequestBody {
         };
     }
 
-    /** Returns a new request body that transmits the content of {@code file}. */
+    /**
+     * 从{@code file}中返回一个新的request body
+     * Returns a new request body that transmits the content of {@code file}. */
     public static RequestBody create(final MediaType contentType, final File file) {
         if (file == null) throw new NullPointerException("content == null");
 

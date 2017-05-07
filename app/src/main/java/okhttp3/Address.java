@@ -14,12 +14,15 @@ import javax.net.ssl.SSLSocketFactory;
 import okhttp3.internal.Util;
 import static okhttp3.internal.Util.equal;
 /**
+ * 一个原服务器连接的规范，对于简单的连接来说，这是服务器的 主机名和端口号。如果一个显式的代理被请求了
+ * (或者 {@linkplain Proxy#NO_PROXY 没有代理}，这是明确的请求），这里也包括了代理服务器的信息。为了安全
+ * 连接地址也包括了SSL socket 工厂、主机名验证器 和 证书
  * A specification for a connection to an origin server. For simple connections, this is the
  * server's hostname and port. If an explicit proxy is requested (or {@linkplain Proxy#NO_PROXY no
  * proxy} is explicitly requested), this also includes that proxy information. For secure
  * connections the address also includes the SSL socket factory, hostname verifier, and certificate
  * pinner.
- *
+ * 一个共享{@code Address}的HTTP请求可能也共享一个{@link Connection}.
  * <p>HTTP requests that share the same {@code Address} may also share the same {@link Connection}.
  */
 public final class Address {
@@ -72,6 +75,7 @@ public final class Address {
     }
 
     /**
+     * 返回一个包括了 原服务器的主机名和端口 的URL。
      * Returns a URL with the hostname and port of the origin server. The path, query, and fragment of
      * this URL are always empty, since they are not significant for planning a route.
      */
@@ -84,17 +88,22 @@ public final class Address {
         return dns;
     }
 
-    /** Returns the socket factory for new connections. */
+    /**
+     * 返回一个新连接的socket工厂
+     * Returns the socket factory for new connections. */
     public SocketFactory socketFactory() {
         return socketFactory;
     }
 
-    /** Returns the client's proxy authenticator. */
+    /**
+     * 返回代理服务器的authenticator
+     * Returns the client's proxy authenticator. */
     public Authenticator proxyAuthenticator() {
         return proxyAuthenticator;
     }
 
     /**
+     * 返回支持的协议，这个方法经常会返回包含HTTP/1.1的非空 list
      * Returns the protocols the client supports. This method always returns a non-null list that
      * contains minimally {@link Protocol#HTTP_1_1}.
      */
@@ -107,6 +116,7 @@ public final class Address {
     }
 
     /**
+     * 返回一个address的代理选择器，这个只用在proxy为null的时候。
      * Returns this address's proxy selector. Only used if the proxy is null. If none of this
      * selector's proxies are reachable, a direct connection will be attempted.
      */
@@ -115,6 +125,7 @@ public final class Address {
     }
 
     /**
+     * 返回这个address显式指定的代理HTTP。如果是null就使用{@linkplain #proxySelector proxy selector}.
      * Returns this address's explicitly-specified HTTP proxy, or null to delegate to the {@linkplain
      * #proxySelector proxy selector}.
      */
@@ -122,17 +133,23 @@ public final class Address {
         return proxy;
     }
 
-    /** Returns the SSL socket factory, or null if this is not an HTTPS address. */
+    /**
+     * 返回SSL socket工厂，如果是null说明这个不是HTTPS地址
+     * Returns the SSL socket factory, or null if this is not an HTTPS address. */
     public SSLSocketFactory sslSocketFactory() {
         return sslSocketFactory;
     }
 
-    /** Returns the hostname verifier, or null if this is not an HTTPS address. */
+    /**
+     * 返回hostname verifier，如果是null那么说明这个不是HTTPS地址
+     * Returns the hostname verifier, or null if this is not an HTTPS address. */
     public HostnameVerifier hostnameVerifier() {
         return hostnameVerifier;
     }
 
-    /** Returns this address's certificate pinner, or null if this is not an HTTPS address. */
+    /**
+     * 返回certificate pinner，如果是null数目这个不是HTTPS地址
+     * Returns this address's certificate pinner, or null if this is not an HTTPS address. */
     public CertificatePinner certificatePinner() {
         return certificatePinner;
     }

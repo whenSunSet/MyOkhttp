@@ -8,8 +8,10 @@ import java.net.URL;
 import java.util.List;
 
 import okhttp3.internal.Util;
+import okhttp3.internal.http.HttpMethod;
 
 /**
+ * 一个HTTP请求。这个实例是不可变的，如果{@link #body}是null或者不可变的话
  * An HTTP request. Instances of this class are immutable if their {@link #body} is null or itself
  * immutable.
  */
@@ -63,6 +65,7 @@ public final class Request {
     }
 
     /**
+     * 返回此response的缓存控制指令，这个绝不可能是null，甚至这个response包含不缓存的header
      * Returns the cache control directives for this response. This is never null, even if this
      * response contains no {@code Cache-Control} header.
      */

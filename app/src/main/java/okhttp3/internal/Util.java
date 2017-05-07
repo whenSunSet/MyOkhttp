@@ -30,7 +30,9 @@ import okio.BufferedSource;
 import okio.ByteString;
 import okio.Source;
 
-/** Junk drawer of utility methods. */
+/**
+ * 方法类
+ * Junk drawer of utility methods. */
 public final class Util {
     public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     public static final String[] EMPTY_STRING_ARRAY = new String[0];
@@ -60,6 +62,7 @@ public final class Util {
     };
 
     /**
+     *
      * Quick and dirty pattern to differentiate IP addresses from hostnames. This is an approximation
      * of Android's private InetAddress#isNumeric API.
      *

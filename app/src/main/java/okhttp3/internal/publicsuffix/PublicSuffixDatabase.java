@@ -18,11 +18,12 @@ import okio.Okio;
 
 import static okhttp3.internal.Util.closeQuietly;
 /**
+ * 一个由publicsuffix.org提供的域名公共后缀数据库，数据包在assets下面。
  * A database of public suffixes provided by
  * <a href="https://publicsuffix.org/">publicsuffix.org</a>.
  */
 public final class PublicSuffixDatabase {
-    public static final String PUBLIC_SUFFIX_RESOURCE = "publicsuffixes.gz";
+    public static final String PUBLIC_SUFFIX_RESOURCE = "assets/publicsuffixes.gz";
 
     private static final byte[] WILDCARD_LABEL = new byte[]{'*'};
     private static final String[] EMPTY_RULE = new String[0];

@@ -21,38 +21,53 @@ import okhttp3.Protocol;
 import okio.Buffer;
 
 /**
+ * 访问特定平台的特性
  * Access to platform-specific features.
  *
+ * 服务的名称可以显示
  * <h3>Server name indication (SNI)</h3>
  *
+ * 支持Android 2.3+.
  * <p>Supported on Android 2.3+.
  *
+ * 支持OpenJDK 7+
  * Supported on OpenJDK 7+
  *
+ * Session的过程
  * <h3>Session Tickets</h3>
  *
+ * 支持Android 2.3+.
  * <p>Supported on Android 2.3+.
  *
+ * android运输统计
  * <h3>Android Traffic Stats (Socket Tagging)</h3>
  *
+ * 支持Android 4.0+
  * <p>Supported on Android 4.0+.
  *
+ * 应用程序层协议谈判
  * <h3>ALPN (Application Layer Protocol Negotiation)</h3>
  *
+ * 支持Android 5.0+，api在Android 4.4就实现的但事实不稳定的
  * <p>Supported on Android 5.0+. The APIs were present in Android 4.4, but that implementation was
  * unstable.
  *
+ * 支持OpenJDK 7 和 8 (通过JettyALPN-boot库)
  * Supported on OpenJDK 7 and 8 (via the JettyALPN-boot library).
  *
+ * 支持OpenJDK 9 （通过SSLParameters and SSLSocket特性）
  * Supported on OpenJDK 9 via SSLParameters and SSLSocket features.
  *
+ * 信任管理器提取
  * <h3>Trust Manager Extraction</h3>
  *
+ * 支持Android 2.3+ 和 OpenJDK 7+.， 没有公共的API来恢复 信任管理器 所以我们重新创建一个SSLSocketFactory
  * <p>Supported on Android 2.3+ and OpenJDK 7+. There are no public APIs to recover the trust
  * manager that was used to create an {@link SSLSocketFactory}.
  *
+ * Android明文允许检测
  * <h3>Android Cleartext Permit Detection</h3>
- *
+ * 支持Android 6.0+ 通过{@code NetworkSecurityPolicy}.实现
  * <p>Supported on Android 6.0+ via {@code NetworkSecurityPolicy}.
  */
 public class Platform {
@@ -65,12 +80,17 @@ public class Platform {
         return PLATFORM;
     }
 
-    /** Prefix used on custom headers. */
+    /**
+     * 前缀用于自定义header
+     * Prefix used on custom headers. */
     public String getPrefix() {
         return "OkHttp";
     }
 
     public X509TrustManager trustManager(SSLSocketFactory sslSocketFactory) {
+        // 试图获取 信用管理器 从OpenJDK socket 中。我们在所有的平台中使用这个为了支持Robolectric
+        // 这个class是Android和Oracle JDK的混合物。
+        // 注意：在Robolectric中我们不支持HTTP/2或者其他好的特性
         // Attempt to get the trust manager from an OpenJDK socket factory. We attempt this on all
         // platforms in order to support Robolectric, which mixes classes from both Android and the
         // Oracle JDK. Note that we don't support HTTP/2 or other nice features on Robolectric.
@@ -85,6 +105,7 @@ public class Platform {
     }
 
     /**
+     * 在{@code sslSocket} 中配置TLS的扩展为了{@code route}.
      * Configure TLS extensions on {@code sslSocket} for {@code route}.
      *
      * @param hostname non-null for client-side handshakes; null for server-side handshakes.
@@ -94,13 +115,16 @@ public class Platform {
     }
 
     /**
+     * 在TLS握手之调用，为了释放被分配的内存资源{@link #configureTlsExtensions}.
      * Called after the TLS handshake to release resources allocated by {@link
      * #configureTlsExtensions}.
      */
     public void afterHandshake(SSLSocket sslSocket) {
     }
 
-    /** Returns the negotiated protocol, or null if no protocol was negotiated. */
+    /**
+     * 返回商谈好的协议，或者如果没有协议可以商谈的话就返回null
+     * Returns the negotiated protocol, or null if no protocol was negotiated. */
     public String getSelectedProtocol(SSLSocket socket) {
         return null;
     }
@@ -120,6 +144,8 @@ public class Platform {
     }
 
     /**
+     * 当这个方法被执行的瞬间返回一个持有着 追踪信息 的对象。这个方法需要特别的使用在实现了
+     * {@link java.io.Closeable}的对象中，并且结合{@link #logCloseableLeak(String, Object)}.方法
      * Returns an object that holds a stack trace created at the moment this method is executed. This
      * should be used specifically for {@link java.io.Closeable} objects and in conjunction with
      * {@link #logCloseableLeak(String, Object)}.
@@ -153,7 +179,9 @@ public class Platform {
         return new BasicCertificateChainCleaner(TrustRootIndex.get(trustManager));
     }
 
-    /** Attempt to match the host runtime to a capable Platform implementation. */
+    /**
+     * 试图比较运行时的host来获取Platform的实现
+     * Attempt to match the host runtime to a capable Platform implementation. */
     private static Platform findPlatform() {
         Platform android = AndroidPlatform.buildIfSupported();
 
@@ -178,6 +206,7 @@ public class Platform {
     }
 
     /**
+     * 返回byte的连接，协议的前缀名称
      * Returns the concatenation of 8-bit, length prefixed protocol names.
      * http://tools.ietf.org/html/draft-agl-tls-nextprotoneg-04#page-4
      */

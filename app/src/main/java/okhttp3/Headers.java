@@ -19,19 +19,24 @@ import okhttp3.internal.Util;
 import okhttp3.internal.http.HttpDate;
 
 /**
+ * 一个HTTP message的header字段， Values是不解释的string；使用{@code Request}和{@code Response}
+ * 来解释headers。这个类顺序维护HTTP message中的header字段
  * The header fields of a single HTTP message. Values are uninterpreted strings; use {@code Request}
  * and {@code Response} for interpreted headers. This class maintains the order of the header fields
  * within the HTTP message.
  *
+ * 这个class一行一行的跟踪header信息。在这个clas中，一个被多个逗号分割的属于同一行的header字段将被看成一个属性
+ * 如果这里的字段支持多个属性的话，那么这里分割逗号获取value的工作应该交给调用者。这里简化了使用单字段但是包好逗号的value
+ * 如cookie和data
  * <p>This class tracks header values line-by-line. A field with multiple comma- separated values on
  * the same line will be treated as a field with a single value by this class. It is the caller's
  * responsibility to detect and split on commas if their field permits multiple values. This
  * simplifies use of single-valued fields whose values routinely contain commas, such as cookies or
  * dates.
- *
+ * 这个class会自动去掉空格，这里不会返回有前导或者尾随的空格
  * <p>This class trims whitespace from values. It never returns values with leading or trailing
  * whitespace.
- *
+ * 这里的实体是不可变的，使用{@link Builder}来创建实体
  * <p>Instances of this class are immutable. Use {@link Builder} to create instances.
  */
 public final class Headers {
@@ -45,12 +50,15 @@ public final class Headers {
         this.namesAndValues = namesAndValues;
     }
 
-    /** Returns the last value corresponding to the specified field, or null. */
+    /**
+     * 返回最后一个与传入参数相同的字段，可能返回null
+     * Returns the last value corresponding to the specified field, or null. */
     public String get(String name) {
         return get(namesAndValues, name);
     }
 
     /**
+     * 返回HTTP请求的日期，如果字段缺失那么可能返回null
      * Returns the last value corresponding to the specified field parsed as an HTTP date, or null if
      * either the field is absent or cannot be parsed as a date.
      */
@@ -104,6 +112,8 @@ public final class Headers {
     }
 
     /**
+     * 返回true 如果{@code other}是一个{@code Headers}的实例 对于同一个header、对于同一个缓存。
+     *
      * Returns true if {@code other} is a {@code Headers} object with the same headers, with the same
      * casing, in the same order. Note that two headers instances may be <i>semantically</i> equal
      * but not equal according to this method. In particular, none of the following sets of headers

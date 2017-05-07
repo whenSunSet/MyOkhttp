@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * 一个符合RFC 2045的Media Type类。适当的描述* HTTP请求或响应的内容类型的body
  * An <a href="http://tools.ietf.org/html/rfc2045">RFC 2045</a> Media Type, appropriate to describe
  * the content type of an HTTP request or response body.
  */
@@ -33,6 +34,7 @@ public final class MediaType {
     }
 
     /**
+     * 通过传入的string返回一个media type，可能返回null，如果这里的string不是标准的格式
      * Returns a media type for {@code string}, or null if {@code string} is not a well-formed media
      * type.
      */
@@ -71,6 +73,7 @@ public final class MediaType {
     }
 
     /**
+     * 返回高级别的media type，例如"text", "image", "audio", "video", 或"application".
      * Returns the high-level media type, such as "text", "image", "audio", "video", or
      * "application".
      */
@@ -79,6 +82,7 @@ public final class MediaType {
     }
 
     /**
+     * 返回特别的 media subtype，如"plain" 或 "png", "mpeg", "mp4" 或 "xml".
      * Returns a specific media subtype, such as "plain" or "png", "mpeg", "mp4" or "xml".
      */
     public String subtype() {
@@ -86,6 +90,7 @@ public final class MediaType {
     }
 
     /**
+     * 返回media type的字符集，返回null，如果这个media type部是特殊的字符集
      * Returns the charset of this media type, or null if this media type doesn't specify a charset.
      */
     public Charset charset() {
@@ -93,6 +98,8 @@ public final class MediaType {
     }
 
     /**
+     * 返回本media type的字符集，，或者返回{@code defaultValue}如果这个media type使用的不是特殊的字符集
+     *
      * Returns the charset of this media type, or {@code defaultValue} if either this media type
      * doesn't specify a charset, of it its charset is unsupported by the current runtime.
      */
@@ -105,6 +112,7 @@ public final class MediaType {
     }
 
     /**
+     *
      * Returns the encoded media type, like "text/plain; charset=utf-8", appropriate for use in a
      * Content-Type header.
      */

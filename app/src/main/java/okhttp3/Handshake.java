@@ -16,9 +16,10 @@ import javax.net.ssl.SSLSession;
 import okhttp3.internal.Util;
 
 /**
- * A record of a TLS handshake. For HTTPS clients, the client is <i>local</i> and the remote server
- * is its <i>peer</i>.
- *
+ * 一个记录TLS握手的class。对于HTTPS的客户端，客户端是本地的，远端的服务器是他的对等体
+ * A record of a TLS handshake. For HTTPS clients, the client is local and the remote server
+ * is its peer
+ * 这个对象完整的描述了一遍握手。使用{@link ConnectionSpec}来设置握手的策略
  * <p>This value object describes a completed handshake. Use {@link ConnectionSpec} to set policy
  * for new handshakes.
  */
@@ -71,6 +72,7 @@ public final class Handshake {
     }
 
     /**
+     * 返回这个连接所使用到的TLS协议版本。在OKHttp3.0之前可能返回null，如果响应被缓存了
      * Returns the TLS version used for this connection. May return null if the response was cached
      * with a version of OkHttp prior to 3.0.
      */
@@ -78,24 +80,32 @@ public final class Handshake {
         return tlsVersion;
     }
 
-    /** Returns the cipher suite used for the connection. */
+    /**
+     * 返回连接的密码组
+     * Returns the cipher suite used for the connection. */
     public CipherSuite cipherSuite() {
         return cipherSuite;
     }
 
-    /** Returns a possibly-empty list of certificates that identify the remote peer. */
+    /**
+     * 可能返回一个空的证书列表，这个列表用来确定远端对等体
+     * Returns a possibly-empty list of certificates that identify the remote peer. */
     public List<Certificate> peerCertificates() {
         return peerCertificates;
     }
 
-    /** Returns the remote peer's principle, or null if that peer is anonymous. */
+    /**
+     * 返回远端的对等体的原则，返回null如果远端对等体是匿名的
+     * Returns the remote peer's principle, or null if that peer is anonymous. */
     public Principal peerPrincipal() {
         return !peerCertificates.isEmpty()
                 ? ((X509Certificate) peerCertificates.get(0)).getSubjectX500Principal()
                 : null;
     }
 
-    /** Returns a possibly-empty list of certificates that identify this peer. */
+    /**
+     * 可能返回一个空的证书列表，这个列表用来确定远端对等体
+     * Returns a possibly-empty list of certificates that identify this peer. */
     public List<Certificate> localCertificates() {
         return localCertificates;
     }

@@ -13,13 +13,17 @@ import java.util.Locale;
 import static okhttp3.internal.Util.UTC;
 
 /**
+ * 解析HTTP日期的工具类
  * Best-effort parser for HTTP dates.
  */
 public final class HttpDate {
-    /** The last four-digit year: "Fri, 31 Dec 9999 23:59:59 GMT". */
+    /**
+     * 最大的年份
+     * The last four-digit year: "Fri, 31 Dec 9999 23:59:59 GMT". */
     public static final long MAX_DATE = 253402300799999L;
 
     /**
+     * 大多数website提供cookie格式，急切地创建解析器来确保这些cookie在快速路径。
      * Most websites serve cookies in the blessed format. Eagerly create the parser to ensure such
      * cookies are on the fast path.
      */
@@ -34,7 +38,9 @@ public final class HttpDate {
                 }
             };
 
-    /** If we fail to parse a date in a non-standard format, try each of these formats in sequence. */
+    /**
+     * 如果我们解析一个日期失败了，是因为一个不标准的格式，那么试试其他的格式，就像下面这些
+     * If we fail to parse a date in a non-standard format, try each of these formats in sequence. */
     private static final String[] BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS = new String[] {
             // HTTP formats required by RFC2616 but with any timezone.
             "EEE, dd MMM yyyy HH:mm:ss zzz", // RFC 822, updated by RFC 1123 with any TZ
@@ -60,7 +66,9 @@ public final class HttpDate {
     private static final DateFormat[] BROWSER_COMPATIBLE_DATE_FORMATS =
             new DateFormat[BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS.length];
 
-    /** Returns the date for {@code value}. Returns null if the value couldn't be parsed. */
+    /**
+     * 返回一个data从传入的参数{@code value}中。返回null如果这个{@code value}不能被解析出date
+     * Returns the date for {@code value}. Returns null if the value couldn't be parsed. */
     public static Date parse(String value) {
         if (value.length() == 0) {
             return null;

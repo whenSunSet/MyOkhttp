@@ -25,8 +25,10 @@ import static okhttp3.internal.Util.trimSubstring;
 import static okhttp3.internal.Util.verifyAsIpAddress;
 
 /**
+ * 一个符合RFC 6265 的Cookie类
  * An <a href="http://tools.ietf.org/html/rfc6265">RFC 6265</a> Cookie.
  *
+ * 这个class 不支持在cookie上放置额外的拓展属性
  * <p>This class doesn't support additional attributes on cookies, like <a
  * href="https://code.google.com/p/chromium/issues/detail?id=232693">Chromium's Priority=HIGH
  * extension</a>.
@@ -49,7 +51,9 @@ public final class Cookie {
     private final boolean secure;
     private final boolean httpOnly;
 
+    //如果存在'expires' 或者 'max-age'那么就返回true
     private final boolean persistent; // True if 'expires' or 'max-age' is present.
+    //返回true，除非'domain'存在
     private final boolean hostOnly; // True unless 'domain' is present.
 
     private Cookie(String name, String value, long expiresAt, String domain, String path,
@@ -81,7 +85,8 @@ public final class Cookie {
         this.hostOnly = builder.hostOnly;
     }
 
-    /** Returns a non-empty string with this cookie's name. */
+    /**
+     * Returns a non-empty string with this cookie's name. */
     public String name() {
         return name;
     }
