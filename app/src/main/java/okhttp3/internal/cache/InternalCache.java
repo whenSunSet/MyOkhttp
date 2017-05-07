@@ -6,6 +6,9 @@ package okhttp3.internal.cache;
 
 import java.io.IOException;
 
+import okhttp3.Request;
+import okhttp3.Response;
+
 /**
  * OkHttp 的内部缓存接口，应用不需要实现这个接口，相反应该使用 {@link okhttp3.Cache}来代替这个接口
  *

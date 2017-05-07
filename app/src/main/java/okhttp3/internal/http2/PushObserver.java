@@ -5,6 +5,7 @@ package okhttp3.internal.http2;
  */
 
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.Protocol;
 import okio.BufferedSource;
