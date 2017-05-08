@@ -49,33 +49,44 @@ import okio.Sink;
 import okio.Source;
 
 /**
+ * 缓存HTTP和HTTPS的response到文件系统中，所以他们可以被重用以节省时间和宽带
  * Caches HTTP and HTTPS responses to the filesystem so they may be reused, saving time and
  * bandwidth.
  *
+ * 缓存优化
  * <h3>Cache Optimization</h3>
  *
+ * 对缓存的有效性进行评估，这个class跟踪三个数据
  * <p>To measure cache effectiveness, this class tracks three statistics:
  * <ul>
+ *     {@linkplain #requestCount() Request Count:}：从这个缓存被创建以来，有多少个request被进行了
  *     <li><strong>{@linkplain #requestCount() Request Count:}</strong> the number of HTTP
  *         requests issued since this cache was created.
+ *     {@linkplain #networkCount() Network Count:}：需要使用网络的request的数量
  *     <li><strong>{@linkplain #networkCount() Network Count:}</strong> the number of those
  *         requests that required network use.
+ *      {@linkplain #hitCount() Hit Count:}：有多少缓存使用到了缓存
  *     <li><strong>{@linkplain #hitCount() Hit Count:}</strong> the number of those requests
  *         whose responses were served by the cache.
  * </ul>
- *
+ * 有些时候一个request将会导致一个条件缓存的命中。如果这个缓存包含了一个陈旧的response的拷贝。
+ * 那么客户端将会提交一个有条件的{@code GET}请求。服务器将会发送一个更新的response，如果这个response已经改变了
+ * 或者返回一个简短的'not modified' response，如果客户端的拷贝依然有效。这时候network count和hit count都会被加一
  * Sometimes a request will result in a conditional cache hit. If the cache contains a stale copy of
  * the response, the client will issue a conditional {@code GET}. The server will then send either
  * the updated response if it has changed, or a short 'not modified' response if the client's copy
  * is still valid. Such responses increment both the network count and hit count.
  *
+ * 最好的提升缓存被命中的方法是通过配置 web server以返回一个可以缓存的response。
  * <p>The best way to improve the cache hit rate is by configuring the web server to return
  * cacheable responses. Although this client honors all <a
  * href="http://tools.ietf.org/html/rfc7234">HTTP/1.1 (RFC 7234)</a> cache headers, it doesn't cache
  * partial responses.
  *
+ * 推动一个网络response
  * <h3>Force a Network Response</h3>
- *
+ * 在有些情况下，例如用户点击了一个刷新的button。这时候跳过缓存可能是必须的，此时就需要从服务器获取数据了
+ * 为了推动一个完整的刷新，没有缓存的代码就像下面一样
  * <p>In some situations, such as after a user clicks a 'refresh' button, it may be necessary to
  * skip the cache, and fetch data directly from the server. To force a full refresh, add the {@code
  * no-cache} directive: <pre>   {@code
@@ -86,6 +97,8 @@ import okio.Source;
  *       .build();
  * }</pre>
  *
+ * 如果只需要获取一个缓存的response，这个缓存只要在服务器允许的时间段下就不需要刷新的话，
+ * 可以使用下面的代码
  * If it is only necessary to force a cached response to be validated by the server, use the more
  * efficient {@code max-age=0} directive instead: <pre>   {@code
  *
@@ -97,8 +110,11 @@ import okio.Source;
  *       .build();
  * }</pre>
  *
+ * 推动一个缓存response
  * <h3>Force a Cache Response</h3>
  *
+ * 有时候你将会想展示资源，如果他们是立即生效的，那么就没有必要这么做。
+ * 这个可以被使用所以你的应用可以展示一些当等待一些最后的数据被下载。这样就能限制一个request只使用本地的缓存资源
  * <p>Sometimes you'll want to show resources if they are available immediately, but not otherwise.
  * This can be used so your application can show <i>something</i> while waiting for the latest data
  * to be downloaded. To restrict a request to locally-cached resources, add the {@code
@@ -117,6 +133,9 @@ import okio.Source;
  *       // The resource was not cached.
  *     }
  * }</pre>
+ *
+ * 下面这个技术在陈旧的response比没有response的情况好的时候适用。
+ * 这样可以允许陈旧的缓存response被使用。
  * This technique works even better in situations where a stale response is better than no response.
  * To permit stale cached responses, use the {@code max-stale} directive with the maximum staleness
  * in seconds: <pre>   {@code
@@ -129,6 +148,8 @@ import okio.Source;
  *       .build();
  * }</pre>
  *
+ * {@link CacheControl}类可以配置request的缓存法则和解析response缓存的准则。
+ * 他甚至提供了常量来方便使用者使用{@link CacheControl#FORCE_NETWORK}和{@link CacheControl#FORCE_CACHE}
  * <p>The {@link CacheControl} class can configure request caching directives and parse response
  * caching directives. It even offers convenient constants {@link CacheControl#FORCE_NETWORK} and
  * {@link CacheControl#FORCE_CACHE} that address the use cases above.
@@ -284,9 +305,11 @@ public final class Cache implements Closeable, Flushable {
   }
 
   /**
+   * 初始化缓存。这将包括从本地存储中读取日志文件和构建必要的内存中的缓存信息
    * Initialize the cache. This will include reading the journal files from the storage and building
    * up the necessary in-memory cache information.
    *
+   * 这里初始化的时间应该是取决于日志文件的大小和当前真实缓存的大小。应用需要在其他线程调用这个初始化方法
    * <p>The initialization time may vary depending on the journal file size and the current actual
    * cache size. The application needs to be aware of calling this function during the
    * initialization phase and preferably in a background worker thread.
@@ -299,6 +322,7 @@ public final class Cache implements Closeable, Flushable {
   }
 
   /**
+   * 关闭缓存斌且删除所有的存储值。这将删除所有的缓存目录下的文件包括没有被使用于缓存的文件
    * Closes the cache and deletes all of its stored values. This will delete all files in the cache
    * directory including files that weren't created by the cache.
    */
@@ -307,6 +331,7 @@ public final class Cache implements Closeable, Flushable {
   }
 
   /**
+   * 删除所有缓存。正在写入的缓存将会被完成，但是相应的response将不会被储存
    * Deletes all values stored in the cache. In-flight writes to the cache will complete normally,
    * but the corresponding responses will not be stored.
    */
@@ -315,11 +340,14 @@ public final class Cache implements Closeable, Flushable {
   }
 
   /**
+   * 返回一个在缓存中覆盖了所有URL的迭代器，这个迭代器不会抛出{@code ConcurrentModificationException},
+   * 但是如果新的response在迭代的期间被添加了。他们的URL将不会被返回。如果存在response在迭代的期间被清除的，那么他们将会缺少（除非早就被返回了）
    * Returns an iterator over the URLs in this cache. This iterator doesn't throw {@code
    * ConcurrentModificationException}, but if new responses are added while iterating, their URLs
    * will not be returned. If existing responses are evicted during iteration, they will be absent
    * (unless they were already returned).
    *
+   * 这里的迭代器支持{@linkplain Iterator#remove}。
    * <p>The iterator supports {@linkplain Iterator#remove}. Removing a URL from the iterator evicts
    * the corresponding response from the cache. Use this to evict selected responses.
    */
@@ -470,11 +498,28 @@ public final class Cache implements Closeable, Flushable {
     }
   }
 
+  static int readInt(BufferedSource source) throws IOException {
+    try {
+      long result = source.readDecimalLong();
+      String line = source.readUtf8LineStrict();
+      if (result < 0 || result > Integer.MAX_VALUE || !line.isEmpty()) {
+        throw new IOException("expected an int but was \"" + result + line + "\"");
+      }
+      return (int) result;
+    } catch (NumberFormatException e) {
+      throw new IOException(e.getMessage());
+    }
+  }
+
   private static final class Entry {
-    /** Synthetic response header: the local time when the request was sent. */
+    /**
+     * 合成响应header：请求被发送时候的本地时间
+     * Synthetic response header: the local time when the request was sent. */
     private static final String SENT_MILLIS = Platform.get().getPrefix() + "-Sent-Millis";
 
-    /** Synthetic response header: the local time when the response was received. */
+    /**
+     * 合成响应header：response被接收到的时间
+     * Synthetic response header: the local time when the response was received. */
     private static final String RECEIVED_MILLIS = Platform.get().getPrefix() + "-Received-Millis";
 
     private final String url;
@@ -489,6 +534,7 @@ public final class Cache implements Closeable, Flushable {
     private final long receivedResponseMillis;
 
     /**
+     * 从input stream读取一个entry。一个经典的entry就回像下面这样：
      * Reads an entry from an input stream. A typical entry looks like this:
      * <pre>{@code
      *   http://google.com/foo
@@ -503,6 +549,7 @@ public final class Cache implements Closeable, Flushable {
      *   Cache-Control: max-age=600
      * }</pre>
      *
+     * 已经经典的HTTPS文件将会像下面这样
      * <p>A typical HTTPS file looks like this:
      * <pre>{@code
      *   https://google.com/foo
@@ -523,12 +570,19 @@ public final class Cache implements Closeable, Flushable {
      *   -1
      *   TLSv1.2
      * }</pre>
+     *
+     * 这个文件是以行分割的。第一第二行就是URL和reuqest的方法。接下来是HTTP的request的header的行数
      * The file is newline separated. The first two lines are the URL and the request method. Next
      * is the number of HTTP Vary request header lines, followed by those lines.
      *
+     * 接下来是response的状态码，接下来是HTTP response的header数量
      * <p>Next is the response status line, followed by the number of HTTP response header lines,
      * followed by those lines.
      *
+     * HTTPS的response也会包含SSL的session信息。这将会空一行开始，并且一行将会包含
+     * 密码组。接下来是证书链的长度。这个证书是由base64编码的并且一个一行。接下来一行是
+     * 本地的证书也是base64编码，一个占有一行。长度为-1表示编码的字符集是空列表。最后一行是可选的。
+     * 如果存在，那么表示TLS的版本
      * <p>HTTPS responses also contain SSL session information. This begins with a blank line, and
      * then a line containing the cipher suite. Next is the length of the peer certificate chain.
      * These certificates are base64-encoded and appear each on their own line. The next line
@@ -717,19 +771,6 @@ public final class Cache implements Closeable, Flushable {
           .sentRequestAtMillis(sentRequestMillis)
           .receivedResponseAtMillis(receivedResponseMillis)
           .build();
-    }
-  }
-
-  static int readInt(BufferedSource source) throws IOException {
-    try {
-      long result = source.readDecimalLong();
-      String line = source.readUtf8LineStrict();
-      if (result < 0 || result > Integer.MAX_VALUE || !line.isEmpty()) {
-        throw new IOException("expected an int but was \"" + result + line + "\"");
-      }
-      return (int) result;
-    } catch (NumberFormatException e) {
-      throw new IOException(e.getMessage());
     }
   }
 

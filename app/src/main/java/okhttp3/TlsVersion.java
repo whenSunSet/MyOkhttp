@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * TLS的版本，这个可以提供安全的socket，可以看看{@link javax.net.ssl.SSLSocket#setEnabledProtocols}.
  * Versions of TLS that can be offered when negotiating a secure socket. See {@link
  * javax.net.ssl.SSLSocket#setEnabledProtocols}.
  */
