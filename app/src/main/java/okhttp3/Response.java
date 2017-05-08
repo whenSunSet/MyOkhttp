@@ -19,7 +19,8 @@ import static java.net.HttpURLConnection.HTTP_MULT_CHOICE;
 import static java.net.HttpURLConnection.HTTP_PROXY_AUTH;
 import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
-
+import static okhttp3.internal.http.StatusLine.HTTP_PERM_REDIRECT;
+import static okhttp3.internal.http.StatusLine.HTTP_TEMP_REDIRECT;
 /**
  * 一个HTTP的response，这个class的实例是不可变的：这里的response body 是一次性的，只能读取一次然后就会被关闭，其他的属性都是不可变的。
  * An HTTP response. Instances of this class are not immutable: the response body is a one-shot
