@@ -68,9 +68,10 @@ public final class CacheInterceptor implements Interceptor {
     }
 
     if (cacheCandidate != null && cacheResponse == null) {
+      //这个缓存的候选人不适用，所以安全的关闭它
       closeQuietly(cacheCandidate.body()); // The cache candidate wasn't applicable. Close it.
     }
-
+    //如果我们禁止使用网络并且我们的没有缓存response，那么这个请求就失败了，返回失败的resposne
     // If we're forbidden from using the network and the cache is insufficient, fail.
     if (networkRequest == null && cacheResponse == null) {
       return new Response.Builder()
@@ -84,6 +85,7 @@ public final class CacheInterceptor implements Interceptor {
           .build();
     }
 
+    //如果我们不需要网络，那么我们就直接返回缓存的resposne
     // If we don't need the network, we're done.
     if (networkRequest == null) {
       return cacheResponse.newBuilder()
@@ -95,12 +97,14 @@ public final class CacheInterceptor implements Interceptor {
     try {
       networkResponse = chain.proceed(networkRequest);
     } finally {
+      //如果我们因为IO或者其他原因抛出异常了，那么记住别泄漏缓存的body
       // If we're crashing on I/O or otherwise, don't leak the cache body.
       if (networkResponse == null && cacheCandidate != null) {
         closeQuietly(cacheCandidate.body());
       }
     }
 
+    //如果我们已经确认有缓存response了，那么我们做一个选择
     // If we have a cache response too, then we're doing a conditional get.
     if (cacheResponse != null) {
       if (networkResponse.code() == HTTP_NOT_MODIFIED) {
@@ -130,6 +134,7 @@ public final class CacheInterceptor implements Interceptor {
 
     if (cache != null) {
       if (HttpHeaders.hasBody(response) && CacheStrategy.isCacheable(response, networkRequest)) {
+        //提供一个请求来缓存response
         // Offer this request to the cache.
         CacheRequest cacheRequest = cache.put(response);
         return cacheWritingResponse(cacheRequest, response);
@@ -154,13 +159,15 @@ public final class CacheInterceptor implements Interceptor {
   }
 
   /**
-   * 返回一个新source，这个source
+   * 返回一个新source，这个source的byte数据是从{@code cacheRequest}中来的。在流关闭的时候我们必须
+   * 小心翼翼的处理剩余的字节；否则我们将不能排净剩下的字节这样就不能完成缓存response
    * Returns a new source that writes bytes to {@code cacheRequest} as they are read by the source
    * consumer. This is careful to discard bytes left over when the stream is closed; otherwise we
    * may never exhaust the source stream and therefore not complete the cached response.
    */
   private Response cacheWritingResponse(final CacheRequest cacheRequest, Response response)
       throws IOException {
+    //一些app返回一个null的body；为了兼容这种情况我们选择尝试缓存一个null的请求
     // Some apps return a null body; for compatibility we treat that like a null cache request.
     if (cacheRequest == null) return response;
     Sink cacheBodyUnbuffered = cacheRequest.body();
@@ -216,7 +223,9 @@ public final class CacheInterceptor implements Interceptor {
         .build();
   }
 
-  /** Combines cached headers with a network headers as defined by RFC 2616, 13.5.3. */
+  /**
+   * 将缓存的header和网络返回的header，这里使用的标准是 RFC 2616, 13.5.3
+   * Combines cached headers with a network headers as defined by RFC 2616, 13.5.3. */
   private static Headers combine(Headers cachedHeaders, Headers networkHeaders) {
     Headers.Builder result = new Headers.Builder();
 
@@ -245,6 +254,7 @@ public final class CacheInterceptor implements Interceptor {
   }
 
   /**
+   * 返回true 如果{@code fieldName}是一个点对点的HTTP header，这里使用的标准是 RFC 2616 13.5.1.
    * Returns true if {@code fieldName} is an end-to-end HTTP header, as defined by RFC 2616,
    * 13.5.1.
    */

@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.internal.http.HttpHeaders;
 
 /**
+ * 一个控制缓存header的缓存准则。这个准则设置哪一个response可以被缓存的策略，并且哪一个request满足response
  * A Cache-Control header with cache directives from a server or client. These directives set policy
  * on what responses can be stored, and which requests can be satisfied by those stored responses.
  *
@@ -12,12 +13,15 @@ import okhttp3.internal.http.HttpHeaders;
  */
 public final class CacheControl {
   /**
+   * 需要网络response的Cache control request准则，注意,这种*请求可能会被缓存通过辅助条件GET请求。
    * Cache control request directives that require network validation of responses. Note that such
    * requests may be assisted by the cache via conditional GET requests.
    */
   public static final CacheControl FORCE_NETWORK = new Builder().noCache().build();
 
   /**
+   * 只需要缓存的request，甚至这个缓存的response 是比较陈旧的。如果这个被缓存的response不是可用的
+   * 或者请求服务刷新了，这里将会返回{@code 504 Unsatisfiable Request}.
    * Cache control request directives that uses the cache only, even if the cached response is
    * stale. If the response isn't available in the cache or requires server validation, the call
    * will fail with a {@code 504 Unsatisfiable Request}.
@@ -73,22 +77,27 @@ public final class CacheControl {
   }
 
   /**
+   * 对于一个response, 这是字段"no-cache" 的名字是具有误导性的。他不会阻止我们从缓存中获取response
+   * 这里仅仅是表示我们需要验证与原服务器的response在其返回之前。我们使用使用条件GET request来进行
    * In a response, this field's name "no-cache" is misleading. It doesn't prevent us from caching
    * the response; it only means we have to validate the response with the origin server before
    * returning it. We can do this with a conditional GET.
-   *
+   * 对于一个request，这里表示不使用缓存来满足requesr
    * <p>In a request, it means do not use a cache to satisfy the request.
    */
   public boolean noCache() {
     return noCache;
   }
 
-  /** If true, this response should not be cached. */
+  /**
+   * 如果是true，这表示不使用缓存
+   * If true, this response should not be cached. */
   public boolean noStore() {
     return noStore;
   }
 
   /**
+   * 在这个时间之间，缓存可以被使用而不需要去验证是否正确
    * The duration past the response's served date that it can be served without validation.
    */
   public int maxAgeSeconds() {
@@ -96,6 +105,8 @@ public final class CacheControl {
   }
 
   /**
+   * 这里的"s-maxage" 表示是最大的共享缓存的时间。不要将"max-age"和不共享缓存搞错了，
+   * 对于Firefox 和 Chrome，这个指令不会缓存
    * The "s-maxage" directive is the max age for shared caches. Not to be confused with "max-age"
    * for non-shared caches, As in Firefox and Chrome, this directive is not honored by this cache.
    */
@@ -124,6 +135,8 @@ public final class CacheControl {
   }
 
   /**
+   * 这个字段的名字是"only-if-cached"容易被搞混。这里的真正意思是“不要使用网络” 。
+   * 这里设置了一个希望将有一个request能够完全的满足缓存的客户端。缓存的response需要验证。
    * This field's name "only-if-cached" is misleading. It actually means "do not use the network".
    * It is set by a client who only wants to make a request if it can be fully satisfied by the
    * cache. Cached responses that would require validation (ie. conditional gets) are not permitted
@@ -138,6 +151,7 @@ public final class CacheControl {
   }
 
   /**
+   * 通过{@code headers}返回一个缓存的准则。
    * Returns the cache directives of {@code headers}. This honors both Cache-Control and Pragma
    * headers if they are present.
    */
@@ -261,7 +275,9 @@ public final class CacheControl {
     return result.toString();
   }
 
-  /** Builds a {@code Cache-Control} request header. */
+  /**
+   * 创建一个{@code Cache-Control}的request header
+   * Builds a {@code Cache-Control} request header. */
   public static final class Builder {
     boolean noCache;
     boolean noStore;
@@ -271,22 +287,30 @@ public final class CacheControl {
     boolean onlyIfCached;
     boolean noTransform;
 
-    /** Don't accept an unvalidated cached response. */
+    /**
+     * 不接受未验证过的缓存response
+     * Don't accept an unvalidated cached response. */
     public Builder noCache() {
       this.noCache = true;
       return this;
     }
 
-    /** Don't store the server's response in any cache. */
+    /**
+     * 不在任何缓存中储存这个服务的response
+     * Don't store the server's response in any cache. */
     public Builder noStore() {
       this.noStore = true;
       return this;
     }
 
     /**
+     * 对一个cached response设置maximum age。如果这个缓存年龄超过了{@code maxAge}
+     * ，这里的缓存将会不被使用，而一个网络request将会被使用
      * Sets the maximum age of a cached response. If the cache response's age exceeds {@code
      * maxAge}, it will not be used and a network request will be made.
      *
+     * @param maxAge 是一个非负的数字。这里的存储和传输是{@link TimeUnit#SECONDS}这会给精度
+     *               更好的精度将会被丢失
      * @param maxAge a non-negative integer. This is stored and transmitted with {@link
      * TimeUnit#SECONDS} precision; finer precision will be lost.
      */
@@ -300,6 +324,7 @@ public final class CacheControl {
     }
 
     /**
+     *
      * Accept cached responses that have exceeded their freshness lifetime by up to {@code
      * maxStale}. If unspecified, stale cache responses will not be used.
      *
