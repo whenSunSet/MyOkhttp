@@ -21,7 +21,9 @@ import okhttp3.Protocol;
 import okhttp3.internal.Util;
 import okhttp3.internal.tls.CertificateChainCleaner;
 
-/** Android 2.3 or better. */
+/**
+ * 基于Android 2.3 或者以上
+ * Android 2.3 or better. */
 class AndroidPlatform extends Platform {
     private static final int MAX_LOG_LENGTH = 4000;
 
@@ -29,6 +31,7 @@ class AndroidPlatform extends Platform {
     private final OptionalMethod<Socket> setUseSessionTickets;
     private final OptionalMethod<Socket> setHostname;
 
+    // Android 5.0+.不是null
     // Non-null on Android 5.0+.
     private final OptionalMethod<Socket> getAlpnSelectedProtocol;
     private final OptionalMethod<Socket> setAlpnProtocols;
@@ -53,6 +56,8 @@ class AndroidPlatform extends Platform {
             if (Util.isAndroidGetsocknameError(e)) throw new IOException(e);
             throw e;
         } catch (SecurityException e) {
+            // 在android 4.3之前，socket.connect 会抛出SecurityException
+            // 如果打开一个socket 的结果是EACCES error
             // Before android 4.3, socket.connect could throw a SecurityException
             // if opening a socket resulted in an EACCES error.
             IOException ioException = new IOException("Exception in connect");
@@ -64,6 +69,8 @@ class AndroidPlatform extends Platform {
     @Override public X509TrustManager trustManager(SSLSocketFactory sslSocketFactory) {
         Object context = readFieldOrNull(sslSocketFactory, sslParametersClass, "sslParameters");
         if (context == null) {
+            // 如果这里不工作的话，在放弃之前试图进行Google Play Services SSL 。
+            // 这样将会加载SSLSocketFactory的classloader
             // If that didn't work, try the Google Play Services SSL provider before giving up. This
             // must be loaded by the SSLSocketFactory's class loader.
             try {
@@ -85,6 +92,7 @@ class AndroidPlatform extends Platform {
 
     @Override public void configureTlsExtensions(
             SSLSocket sslSocket, String hostname, List<Protocol> protocols) {
+        // 使SNI and session可以进行
         // Enable SNI and session tickets.
         if (hostname != null) {
             setUseSessionTickets.invokeOptionalWithoutCheckedException(sslSocket, true);
@@ -110,6 +118,7 @@ class AndroidPlatform extends Platform {
         int logLevel = level == WARN ? Log.WARN : Log.DEBUG;
         if (t != null) message = message + '\n' + Log.getStackTraceString(t);
 
+        // 通过线分割,然后确保每一行可以放入日志的最大长度。
         // Split by line, then ensure each line can fit into Log's maximum length.
         for (int i = 0, length = message.length(); i < length; i++) {
             int newline = message.indexOf('\n', i);
@@ -163,6 +172,7 @@ class AndroidPlatform extends Platform {
     }
 
     public static Platform buildIfSupported() {
+        // 试图寻找Android 2.3+ APIs.
         // Attempt to find Android 2.3+ APIs.
         try {
             Class<?> sslParametersClass;
@@ -181,6 +191,7 @@ class AndroidPlatform extends Platform {
             OptionalMethod<Socket> getAlpnSelectedProtocol = null;
             OptionalMethod<Socket> setAlpnProtocols = null;
 
+            // 试图寻找Android 5.0+ APIs.
             // Attempt to find Android 5.0+ APIs.
             try {
                 Class.forName("android.net.Network"); // Arbitrary class added in Android 5.0.
@@ -199,6 +210,8 @@ class AndroidPlatform extends Platform {
     }
 
     /**
+     * X509TrustManagerExtensions 是添加在Android 4.2中的，
+     * 这是在android中获取一个干净的拦截链的最好方式，因为这里使用相同的代码来进行TLS的握手
      * X509TrustManagerExtensions was added to Android in API 17 (Android 4.2, released in late 2012).
      * This is the best way to get a clean chain on Android because it uses the same code as the TLS
      * handshake.

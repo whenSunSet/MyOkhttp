@@ -20,7 +20,9 @@ import java.net.ProtocolException;
 import okhttp3.Protocol;
 import okhttp3.Response;
 
-/** An HTTP response status line like "HTTP/1.1 200 OK". */
+/**
+ * 一个HTTP response 的状态码"HTTP/1.1 200 OK"
+ * An HTTP response status line like "HTTP/1.1 200 OK". */
 public final class StatusLine {
   /** Numeric status code, 307: Temporary Redirect. */
   public static final int HTTP_TEMP_REDIRECT = 307;

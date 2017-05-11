@@ -9,6 +9,7 @@ import okio.BufferedSink;
 import okio.ByteString;
 
 /**
+ * 这是一个哈夫曼编码的类，这个class是根据下面这些类来制作的
  * This class was originally composed from the following classes in <a
  * href="https://github.com/twitter/hpack">Twitter Hpack</a>.
  *

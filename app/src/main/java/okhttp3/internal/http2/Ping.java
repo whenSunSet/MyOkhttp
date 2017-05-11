@@ -7,6 +7,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 一个本地的ping类
  * A locally-originated ping.
  */
 final class Ping {
@@ -35,6 +36,7 @@ final class Ping {
     }
 
     /**
+     * 返回往返一次ping 时间的纳秒数，如果必要的话胡等待resonse的返回。如果返回-1的话，那么就表示response被取消了
      * Returns the round trip time for this ping in nanoseconds, waiting for the response to arrive if
      * necessary. Returns -1 if the response was canceled.
      */
@@ -44,6 +46,7 @@ final class Ping {
     }
 
     /**
+     * 返回往返一次ping 时间的纳秒数，如果返回-1的话，那么就表示response被取消了，如果返回-2的时候表示时间超出了
      * Returns the round trip time for this ping in nanoseconds, or -1 if the response was canceled,
      * or -2 if the timeout elapsed before the round trip completed.
      */

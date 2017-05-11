@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
+ * 抛出一个异常通过一个单Route指出一个连接的问题。多个可能*尝试替代协议,其中没有一个是成功的
  * An exception thrown to indicate a problem connecting via a single Route. Multiple attempts may
  * have been made with alternative protocols, none of which were successful.
  */
