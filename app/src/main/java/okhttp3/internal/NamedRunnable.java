@@ -5,6 +5,7 @@ package okhttp3.internal;
  */
 
 /**
+ * 设置了线程name的Runnable实现
  * Runnable implementation which always sets its thread name.
  */
 public abstract class NamedRunnable implements Runnable {
