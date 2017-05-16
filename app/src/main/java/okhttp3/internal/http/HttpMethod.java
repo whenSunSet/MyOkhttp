@@ -31,10 +31,13 @@ public final class HttpMethod {
     }
 
     public static boolean redirectsWithBody(String method) {
-        return method.equals("PROPFIND"); // (WebDAV) redirects should also maintain the request body
+        return method.equals("PROPFIND");
+        // 重定向应该维护request body
+        // (WebDAV) redirects should also maintain the request body
     }
 
     public static boolean redirectsToGet(String method) {
+        // 所有的requests除了PROPFIND 都需要重定向到一个GET请求
         // All requests but PROPFIND should redirect to a GET request.
         return !method.equals("PROPFIND");
     }

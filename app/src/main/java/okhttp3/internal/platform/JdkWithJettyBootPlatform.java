@@ -13,6 +13,7 @@ import okhttp3.Protocol;
 import okhttp3.internal.Util;
 
 /**
+ * OpenJDK 7 或者 OpenJDK 8  {@code org.mortbay.jetty.alpn/alpn-boot}在 引导class的路径
  * OpenJDK 7 or OpenJDK 8 with {@code org.mortbay.jetty.alpn/alpn-boot} in the boot class path.
  */
 class JdkWithJettyBootPlatform extends Platform {

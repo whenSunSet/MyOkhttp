@@ -46,6 +46,8 @@ final class Jdk9Platform extends Platform {
         try {
             String protocol = (String) getProtocolMethod.invoke(socket);
 
+            // SSLSocket.getApplicationProtocol 返回“” 如果应用的协议值没有被使用
+            // 如果你没有指定SSLParameters.setApplicationProtocols
             // SSLSocket.getApplicationProtocol returns "" if application protocols values will not
             // be used. Observed if you didn't specify SSLParameters.setApplicationProtocols
             if (protocol == null || protocol.equals("")) {

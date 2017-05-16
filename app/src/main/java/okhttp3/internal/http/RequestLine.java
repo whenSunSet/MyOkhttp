@@ -25,6 +25,8 @@ public final class RequestLine {
   }
 
   /**
+   * 返回一个request的状态行，就像是"GET / HTTP/1.1". 这是通过{@link HttpURLConnection#getHeaderFields}
+   * 暴露给应用的API。所以这里需要去设置，甚至是使用HTTP/2进行传输
    * Returns the request status line, like "GET / HTTP/1.1". This is exposed to the application by
    * {@link HttpURLConnection#getHeaderFields}, so it needs to be set even if the transport is
    * HTTP/2.
@@ -45,6 +47,8 @@ public final class RequestLine {
   }
 
   /**
+   * 返回true如果这个request行应该包括完整的URL，包括主机名和端口（就像like "GET http://android.com/foo HTTP/1.1"）
+   * 否则只放路径(就像 "GET /foo HTTP/1.1")
    * Returns true if the request line should contain the full URL with host and port (like "GET
    * http://android.com/foo HTTP/1.1") or only the path (like "GET /foo HTTP/1.1").
    */
@@ -53,6 +57,7 @@ public final class RequestLine {
   }
 
   /**
+   * 返回request中的path，就像是'/' 在'GET / HTTP/1.1'. 中。据不能为空，甚至可以设置成request的URL
    * Returns the path to request, like the '/' in 'GET / HTTP/1.1'. Never empty, even if the request
    * URL is. Includes the query component if it exists.
    */

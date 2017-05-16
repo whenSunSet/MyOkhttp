@@ -17,8 +17,11 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
+import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
+import okhttp3.internal.tls.BasicCertificateChainCleaner;
 import okhttp3.internal.tls.CertificateChainCleaner;
+import okhttp3.internal.tls.TrustRootIndex;
 import okio.Buffer;
 
 /**

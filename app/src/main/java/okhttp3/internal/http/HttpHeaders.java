@@ -23,7 +23,9 @@ import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static okhttp3.internal.Util.equal;
 import static okhttp3.internal.http.StatusLine.HTTP_CONTINUE;
 
-/** Headers and utilities for internal use by OkHttp. */
+/**
+ * 在OkHttp中使用的Header工具
+ * Headers and utilities for internal use by OkHttp. */
 public final class HttpHeaders {
     private static final String TOKEN = "([^ \"=]*)";
     private static final String QUOTED_STRING = "\"([^\"]*)\"";
@@ -51,6 +53,7 @@ public final class HttpHeaders {
     }
 
     /**
+     * 返回true如果header在{@code cachedRequest} 和 {@code newRequest}.之间变化了
      * Returns true if none of the Vary headers have changed between {@code cachedRequest} and {@code
      * newRequest}.
      */
@@ -63,6 +66,7 @@ public final class HttpHeaders {
     }
 
     /**
+     * 返回true如果header 包含了asterisk。这样的responses不能被缓存
      * Returns true if a Vary header contains an asterisk. Such responses cannot be cached.
      */
     public static boolean hasVaryAll(Response response) {
@@ -70,6 +74,7 @@ public final class HttpHeaders {
     }
 
     /**
+     * 返回true如果header 包含了asterisk。这样的responses不能被缓存
      * Returns true if a Vary header contains an asterisk. Such responses cannot be cached.
      */
     public static boolean hasVaryAll(Headers responseHeaders) {
@@ -81,6 +86,7 @@ public final class HttpHeaders {
     }
 
     /**
+     * 返回request headers 的name，这里需要检查相等性和缓存
      * Returns the names of the request headers that need to be checked for equality when caching.
      */
     public static Set<String> varyFields(Headers responseHeaders) {
@@ -100,10 +106,13 @@ public final class HttpHeaders {
     }
 
     /**
+     * 返回{@code response}的request中的header的子集，这样将影响response's body的内容
      * Returns the subset of the headers in {@code response}'s request that impact the content of
      * response's body.
      */
     public static Headers varyHeaders(Response response) {
+        //将request header发送至网络，如果他的response是变化的。
+        //否则OkHttp 所支持的像"Accept-Encoding: gzip"这样的功能会失效
         // Use the request headers sent over the network, since that's what the
         // response varies on. Otherwise OkHttp-supplied headers like
         // "Accept-Encoding: gzip" may be lost.
@@ -113,6 +122,7 @@ public final class HttpHeaders {
     }
 
     /**
+     * 返回{@code requestHeaders}中header的子集，这样将影响response's body的内容
      * Returns the subset of the headers in {@code requestHeaders} that impact the content of
      * response's body.
      */
@@ -131,6 +141,8 @@ public final class HttpHeaders {
     }
 
     /**
+     * 解析RFC 2617 的challenges，也是错误的指令
+     * 这个API只对scheme name 和 realm感兴趣
      * Parse RFC 2617 challenges, also wrong ordered ones.
      * This API is only interested in the scheme name and realm.
      */
@@ -170,8 +182,11 @@ public final class HttpHeaders {
         cookieJar.saveFromResponse(url, cookies);
     }
 
-    /** Returns true if the response must have a (possibly 0-length) body. See RFC 7231. */
+    /**
+     * 返回true如果这里的response 会有一个(possibly 0-length) body。可以查看RFC 7231
+     * Returns true if the response must have a (possibly 0-length) body. See RFC 7231. */
     public static boolean hasBody(Response response) {
+        // HEAD请求绝对不会产生body，无论这里的response是怎么样的
         // HEAD requests never yield a body regardless of the response headers.
         if (response.request().method().equals("HEAD")) {
             return false;
@@ -184,6 +199,8 @@ public final class HttpHeaders {
             return true;
         }
 
+        // 如果这里的Content-Length 或者Transfer-Encoding header不同意返回的 response 状态码
+        // 这里的response是不符合标准的。为了最好的兼容性，我们支持这个headers
         // If the Content-Length or Transfer-Encoding headers disagree with the response code, the
         // response is malformed. For best compatibility, we honor the headers.
         if (contentLength(response) != -1
@@ -195,6 +212,8 @@ public final class HttpHeaders {
     }
 
     /**
+     * 返回{@code input}中包含了{@code characters}中包含的character的第{@code pos}后面一个序号
+     * 返回input 的长度，如果请求的characters没有被找到
      * Returns the next index in {@code input} at or after {@code pos} that contains a character from
      * {@code characters}. Returns the input length if none of the requested characters can be found.
      */
@@ -208,6 +227,8 @@ public final class HttpHeaders {
     }
 
     /**
+     * 从{@code input}中返回下一个非空格的character 。
+     * 结果是非定义的如果这里的input包含新行的characters
      * Returns the next non-whitespace character in {@code input} that is white space. Result is
      * undefined if input contains newline characters.
      */
@@ -222,6 +243,7 @@ public final class HttpHeaders {
     }
 
     /**
+     * 返回一个正的{@code value}，如果是负数就返回0，或者返回{@code defaultValue}如果不能解析
      * Returns {@code value} as a positive integer, or 0 if it is negative, or {@code defaultValue} if
      * it cannot be parsed.
      */
